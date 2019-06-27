@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaScriptSettings">
+    <option name="languageLevel" value="ES6" />
+  </component>
+  <component name="PhpUnit">
+    <phpunit_settings>
+      <PhpUnitSettings />
+      <phpunit_by_interpreter interpreter_id="fcde303e-007d-4b3e-836f-5567e11a9924" interpreter_name="Remote PHP 5.5" />
+    </phpunit_settings>
+  </component>
+</project>
