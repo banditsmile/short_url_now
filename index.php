@@ -11,9 +11,16 @@ class short_url_now
 
     public function index()
     {
-        $this->sqlite();
+        $this->apcu();
     }
 
+
+    public function apcu()
+    {
+        apcu_add('aa','bbb');
+        $b = apcu_fetch('aa');
+        var_dump($b);
+    }
     public function add($url, $user='nobody')
     {
         $urlHash = md5($url);
