@@ -95,6 +95,12 @@ class short_url_now
         $info =apcu_sma_info();
         echo json_encode($info);
     }
+
+    protected function all()
+    {
+        $data = apcu_cache_info();
+        echo json_encode($data);
+    }
 }
 
 (new short_url_now())->index();
