@@ -35,6 +35,7 @@ class short_url_now
     public function add( )
     {
         $url = $_SERVER['QUERY_STRING'];
+        filter_var($url, FILTER_VALIDATE_URL);
         $code = $this->code();
         while (apcu_add($code, $url, $this->ttl) ===false) {
             $code = $this->code();
