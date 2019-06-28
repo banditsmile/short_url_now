@@ -1,4 +1,8 @@
 <?php
+
+/**
+ * Class short_url_now
+ */
 class short_url_now
 {
 
@@ -15,35 +19,51 @@ class short_url_now
         $code = ltrim($this->urlInfo['path'], '/');
         if (is_numeric($code)) {
             $this->redirect($code);
-        }
-
-        if (method_exists($this, $code)) {
+        } elseif (method_exists($this, $code)) {
             $this->$code();
+        } else {
+            header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
         }
-        header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+        die();
     }
 
+    /**
+     * 跳转到索引地址
+     *
+     * @param $code
+     */
     protected function redirect($code)
     {
         $url = apcu_fetch($code);
         if (!empty($url)) {
-            header("Location: {$url}", false, 301);
+            header("Location: {$url}", true, 308);
+            return;
         }
         header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+        return;
     }
 
-    public function add( )
+    /**
+     * 添加短地址
+     *
+     */
+    public function add()
     {
         $url = $_SERVER['QUERY_STRING'];
-        filter_var($url, FILTER_VALIDATE_URL);
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            header("Bad Request", true, 401);
+            return;
+        }
+        if (strlen($url)>500) {
+            header("Request Entity Too Large", true, 413);
+            return;
+        }
         $code = $this->code();
         while (apcu_add($code, $url, $this->ttl) ===false) {
             $code = $this->code();
         }
         echo  $code;
     }
-
-
 
     /**
      * 由短地址获取原来地址
