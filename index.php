@@ -93,14 +93,14 @@ class short_url_now
     protected function stat()
     {
         $info =apcu_sma_info();
+        $info['memory'] = memory_get_usage(true);
+        $info['memory_peak'] = memory_get_peak_usage(true);
         echo json_encode($info);
     }
 
     protected function all()
     {
         $data = apcu_cache_info();
-        $data['memory'] = memory_get_usage(true);
-        $data['memory_peak'] = memory_get_peak_usage(true);
         echo json_encode($data);
     }
 }
