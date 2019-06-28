@@ -13,7 +13,7 @@ class short_url_now
     //当前请求地址信息
     protected $urlInfo;
     //ip请求数量限制
-    private $perIpLimit = 10;
+    private $perIpLimit = 100;
 
     public function index()
     {
