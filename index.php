@@ -99,6 +99,8 @@ class short_url_now
     protected function all()
     {
         $data = apcu_cache_info();
+        $data['memory'] = memory_get_usage(true);
+        $data['memory_peak'] = memory_get_peak_usage(true);
         echo json_encode($data);
     }
 }
