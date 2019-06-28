@@ -89,6 +89,12 @@ class short_url_now
         $code = rand($min, $max);
         return (string)$code;
     }
+
+    protected function stat()
+    {
+        $info =apcu_sma_info();
+        echo json_encode($info);
+    }
 }
 
 (new short_url_now())->index();
