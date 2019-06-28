@@ -12,6 +12,8 @@ class short_url_now
     protected $ttl = 86400;
     //当前请求地址信息
     protected $urlInfo;
+    //ip请求数量限制
+    private $perIpLimit = 10;
 
     public function index()
     {
@@ -20,7 +22,7 @@ class short_url_now
         if (is_numeric($code)) {
             $this->redirect($code);
         } elseif (method_exists($this, $code)) {
-            $this->$code();
+            call_user_func([$this, $code]);
         } else {
             header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
         }
@@ -49,15 +51,22 @@ class short_url_now
      */
     public function add()
     {
+        //检查url格式合法性
         $url = $_SERVER['QUERY_STRING'];
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             header("Bad Request", true, 401);
             return;
         }
+        //编码的url太长了
         if (strlen($url)>500) {
             header("Request Entity Too Large", true, 413);
             return;
         }
+        //ip限制
+        if ($this->ipLimit()) {
+            return;
+        }
+        //获取一个可用的短地址并保存到内存里面
         $code = $this->code();
         while (apcu_add($code, $url, $this->ttl) ===false) {
             $code = $this->code();
@@ -98,11 +107,52 @@ class short_url_now
         echo json_encode($info);
     }
 
+    /*
     protected function all()
     {
         $data = apcu_cache_info();
         echo json_encode($data);
     }
+    */
+
+    private function ipLimit()
+    {
+        $ip = $this->getIp();
+        $ip = str_replace('.', '', $ip);
+        $num = apcu_inc($ip, 1,  $suc, $this->ttl);
+        if ($num > $this->perIpLimit) {
+            header("Too Many Requests", true, 429);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取请求者的ip
+     *
+     * @return array|false|string
+     */
+    private function getIp()
+    {
+        $mainIp = '';
+        if (getenv('HTTP_CLIENT_IP')) {
+            $mainIp = getenv('HTTP_CLIENT_IP');
+        } else if (getenv('HTTP_X_FORWARDED_FOR')) {
+            $mainIp = getenv('HTTP_X_FORWARDED_FOR');
+        } else if (getenv('HTTP_X_FORWARDED')) {
+            $mainIp = getenv('HTTP_X_FORWARDED');
+        } else if (getenv('HTTP_FORWARDED_FOR')) {
+            $mainIp = getenv('HTTP_FORWARDED_FOR');
+        } else if (getenv('HTTP_FORWARDED')) {
+            $mainIp = getenv('HTTP_FORWARDED');
+        } else if (getenv('REMOTE_ADDR')) {
+            $mainIp = getenv('REMOTE_ADDR');
+        } else {
+            $mainIp = 'UNKNOWN';
+        }
+        return $mainIp;
+    }
 }
+
 
 (new short_url_now())->index();
